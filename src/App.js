@@ -4,13 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Cards from "./Components/Cards";
 import Navbar from "./Components/Navbar/Navbar";
+import { motion } from "framer-motion";
 
 function App() {
       const apiKey = "d986c77daa4264752befefd790927f66";
       const [movieList, setMovieList] = useState([]);
       const [adultOpt, setAdultOpt] = useState(false);
       const [currentPage, setCurrentPage] = useState(1);
-      const [category, setCategory] = useState("");
+      const [filtered, setFiltered] = useState([]);
+      const [activeGenre, setActiveGenre] = useState(0);
       const [loading, setLoading] = useState(true);
       const {
             data: movies,
@@ -26,7 +28,7 @@ function App() {
                         );
 
                         setLoading(false); // Set loading to false once data is fetched
-
+                        setMovieList(response?.data?.results);
                         return response.data; // Return response data
                   } catch (error) {
                         console.error("Error fetching data:", error);
@@ -37,7 +39,7 @@ function App() {
 
       useEffect(() => {
             refetch();
-      }, [refetch, adultOpt, currentPage, category]);
+      }, [refetch, adultOpt, currentPage]);
 
       if (isLoading || loading) {
             return <p>Loading....</p>;
@@ -47,22 +49,46 @@ function App() {
             return <p>Something went wrong!!!</p>;
       }
 
-      console.log(movies);
+      console.log(filtered);
 
       return (
             <div>
                   <div className="w-full md:w-[90%] lg:w-[75%] mx-auto my-10">
+                        <div>
+                              <button
+                                    onClick={() =>
+                                          setCurrentPage(currentPage - 1)
+                                    }
+                              >
+                                    Prev
+                              </button>
+                              <button
+                                    onClick={() =>
+                                          setCurrentPage(currentPage + 1)
+                                    }
+                              >
+                                    {" "}
+                                    Next
+                              </button>
+                        </div>
                         <Navbar
-                              setCurrentPage={setCurrentPage}
-                              currentPage={currentPage}
+                              activeGenre={activeGenre}
+                              setActiveGenre={setActiveGenre}
+                              movieList={movieList}
+                              setFiltered={setFiltered}
                         />
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                              {movies?.results?.map((movie) => (
+                        <motion.div
+                              animate={{ opacity: 1 }}
+                              initial={{ opacity: 0 }}
+                              layout
+                              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+                        >
+                              {filtered?.map((movie) => (
                                     <React.Fragment key={movie.id}>
                                           <Cards movie={movie} />
                                     </React.Fragment>
                               ))}
-                        </div>
+                        </motion.div>
                   </div>
             </div>
       );
